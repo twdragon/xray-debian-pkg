@@ -36,7 +36,6 @@ jobs:
                 fetch-depth: 0
                 repository: 'goxray/desktop'
                 path: 'goxray-gui'
-                path: 'git-ipfs-remote-bridge'
             - name: Clone Debian maintaner scripts repository
               uses: actions/checkout@v4
               with:
