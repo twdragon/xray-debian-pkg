@@ -123,7 +123,7 @@ jobs:
                 rm -rf ./vendor
                 go mod vendor
                 cp -vr ../tools vendor/github.com/fyne-io/
-                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME } goxray-gui "Stan B." godstanis@gmail.com "Stan B." low
+                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME }} goxray-gui "Stan B." godstanis@gmail.com "Stan B." low
                 GOFLAGS="--mod=vendor" debuild -S -uc -us -d
                 mkdir packages
                 mv -v ../goxray-gui*.* packages/
