@@ -126,6 +126,7 @@ jobs:
                 rm -rf ./vendor
                 go mod vendor
                 cp -vr ../tools vendor/github.com/fyne-io/
+                rm -f vendor/github.com/getlantern/elevate/binaries/windows/elevate.exe
                 LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME }} goxray-gui "Stan B." godstanis@gmail.com "Stan B." low
                 GOFLAGS="-mod=vendor" debuild -S -uc -us -d
                 mkdir packages
@@ -134,4 +135,8 @@ jobs:
                 ls -lh packages/ >> ${GITHUB_STEP_SUMMARY}
                 echo -e "\`\`\`\n"
                 cd ..
-
+            - name: Upload unsigned packages
+              uses: actions/upload-artifact@v4
+              with:
+                name: goxray-gui-ubuntu-ppa
+                path: goxray-gui/packages/goxray-gui*.*
