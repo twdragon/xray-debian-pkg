@@ -14,7 +14,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 5
         outputs:
-            build_kubo: ${{ steps.version_compare.outputs.goxray_gui }}
+            build_goxray_gui: ${{ steps.version_compare.outputs.goxray_gui }}
         steps:
             - name: Extract last version from Debian repository and store it in the GitHub CI environment variable
               run: |
@@ -56,13 +56,13 @@ jobs:
                     echo -e "\n - **GoXRay-GUI**: cannot found a release version, release sources for \`${GOXRAY_GUI_VERSION}\` will not be built" >> ${GITHUB_STEP_SUMMARY}
                     echo "goxray_gui=false" >> "$GITHUB_OUTPUT"
                 fi
-    build-kubo:
+    build_goxray_gui:
         if: ${{ needs.version_analyzer.outputs.goxray_gui == 'true' }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         needs: version_analyzer
         env:
-            build_kubo: ${{ needs.version_analyzer.outputs.goxray_gui }}
+            build_goxray_gui: ${{ needs.version_analyzer.outputs.goxray_gui }}
         steps:
             - name: Install Debian helper software
               run: |
