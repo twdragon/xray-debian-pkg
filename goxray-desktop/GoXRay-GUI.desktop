@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=GoXRay-GUI
+Exec=/usr/bin/goxray-gui
+Comment=XRay-TLS GUI client written in Go
+Terminal=false
+Icon=/usr/share/icons/goxray/app.png
+Type=Application
+Categories=Network
+

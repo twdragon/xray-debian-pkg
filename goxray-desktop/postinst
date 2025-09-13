@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+source /usr/share/debconf/confmodule
+db_version 2.0
+
+case "$1" in
+    configure)
+        setcap cap_net_raw,cap_net_admin,cap_net_bind_service+eip /usr/bin/goxray-gui
+    ;;
+
+    upgrade)
+        setcap cap_net_raw,cap_net_admin,cap_net_bind_service+eip /usr/bin/goxray-gui
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+

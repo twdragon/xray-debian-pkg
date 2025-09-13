@@ -1,0 +1,18 @@
+Source: goxray-gui
+Section: net
+Priority: optional
+Standards-Version: 4.6.0
+Build-Depends: dpkg (>= 1.16.1), debhelper-compat (= 13), libgl-dev, xorg-dev, libxkbcommon-dev
+Maintainer: FYNE.IO Team <info@fyne.io>
+Homepage: https://apps.fyne.io/apps/com.github.goxray.client.app.html
+Vcs-Git: https://github.com/goxray/desktop.git
+Rules-Requires-Root: no
+
+Package: goxray-gui
+Architecture: any
+Pre-Depends: debconf (>= 0.2.26), coreutils (>= 5.2.0), bash (>= 3.0), libxkbcommon0, libgl1, libglx0, libx11-6, libxcb1, libxau6, libxdmcp6, libbsd0, libmd0, libcap2-bin
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Desktop GUI VPN client for XRay
+ This project brings fully functional XRay desktop client for macOS and Linux,
+ powered by fyne.io and written in Go.
+

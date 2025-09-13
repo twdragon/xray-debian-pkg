@@ -1,0 +1,4 @@
+goxray-gui /usr/bin
+icon/assets/app.png /usr/share/icons/goxray
+debian/GoXRay-GUI.desktop /usr/share/applications
+

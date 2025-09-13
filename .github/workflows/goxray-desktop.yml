@@ -1,0 +1,61 @@
+on:
+    schedule:
+        - cron: '30 15 * * 2,4,6'
+    push:
+        branches:
+            - 'master'
+defaults:
+    run:
+        shell: bash
+env:
+    UBUNTU_CODENAME: noble
+jobs:
+    version_analyzer:
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+            build_kubo: ${{ steps.version_compare.outputs.goxray_gui }}
+        steps:
+            - name: Extract last version from Debian repository and store it in the GitHub CI environment variable
+              run: |
+                echo -e "# GoXRay-GUI Debian Package Builder CI Process \n\nBuild started: $(date +"%a, %d %b %Y %H:%M:%S %z")" >> ${GITHUB_STEP_SUMMARY}
+                echo -e "Run ID: \`${GITHUB_RUN_NUMBER}\`" >> ${GITHUB_STEP_SUMMARY}
+                echo -e "Workflow version: \`${GITHUB_WORKFLOW_SHA}\`" >> ${GITHUB_STEP_SUMMARY}
+                echo -e "Trigger: \`${GITHUB_EVENT_NAME}\`" >> ${GITHUB_STEP_SUMMARY}
+                echo -e "\n## Version analyzer\n" >> ${GITHUB_STEP_SUMMARY}
+                echo 'Extracting version information from https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/noble/main/source/Sources.gz' >> ${GITHUB_STEP_SUMMARY}
+                curl https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/noble/main/source/Sources.gz --output Sources.gz
+                gzip --decompress Sources.gz
+                GOXRAY_GUI_VERSION_REPO=$(grep -A 10 "^Package: goxray-gui" Sources | grep -Po '(?<=^Version: )[0-9]+\.[0-9]+\.[0-9]+')
+                echo "GOXRAY_GUI_VERSION_REPO=${GOXRAY_GUI_VERSION_REPO}" >> ${GITHUB_ENV}
+                echo -e "\`\`\`\nGOXRAY_GUI_VERSION_REPO=${GOXRAY_GUI_VERSION_REPO}" >> ${GITHUB_STEP_SUMMARY}
+            - name: Clone GoXray-GUI
+              uses: actions/checkout@v4
+              with:
+                submodules: 'true'
+                fetch-depth: 0
+                repository: 'goxray/desktop'
+                path: 'goxray-gui'
+                path: 'git-ipfs-remote-bridge'
+            - name: Clone Debian maintaner scripts repository
+              uses: actions/checkout@v4
+              with:
+                path: 'debian-scripts'
+            - name: Extract last tagged version from Github repository and store it in the GitHub CI environment variable
+              run: |
+                echo -e "\nExtracting and analyzing annotated tags from Git repositories." >> ${GITHUB_STEP_SUMMARY}
+                cd goxray-gui
+                GOXRAY_GUI_VERSION=$(git describe --tags --abbrev=0 | grep -o -E '[0-9]+\.[0-9]+\.[0-9]+')
+                echo "GOXRAY_GUI_VERSION=${GOXRAY_GUI_VERSION}" >> ${GITHUB_ENV}
+                echo -e "\`\`\`\nGOXRAY_GUI_VERSION=${GOXRAY_GUI_VERSION}" >> ${GITHUB_STEP_SUMMARY}
+            - name: Version comparison
+              id: version_compare
+              run: |
+                if $(dpkg --compare-versions "${GOXRAY_GUI_VERSION}" "gt" "${GOXRAY_GUI_VERSION_REPO}")
+                then
+                    echo -e "\n - **GoXRay-GUI**: found a release version \`${GOXRAY_GUI_VERSION}\` > \`${GOXRAY_GUI_VERSION_REPO}\`, running build" >> ${GITHUB_STEP_SUMMARY}
+                    echo "goxray_gui=true" >> "$GITHUB_OUTPUT"
+                else
+                    echo -e "\n - **GoXRay-GUI**: cannot found a release version, release sources for \`${GOXRAY_GUI_VERSION}\` will not be built" >> ${GITHUB_STEP_SUMMARY}
+                    echo "goxray_gui=false" >> "$GITHUB_OUTPUT"
+                fi

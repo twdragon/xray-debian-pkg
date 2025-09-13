@@ -1,0 +1,7 @@
+goxray-gui: using-first-person-in-templates
+goxray-gui: no-manual-page
+goxray-gui: hardening-no-pie
+goxray-gui: bash-completion-with-hashbang
+goxray-gui: recursive-privilege-change
+goxray-gui: executable-not-elf-or-script
+

@@ -1,0 +1,33 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/architecture.mk
+
+build:
+	$(eval HOME := $(CURDIR))
+	export HOME="$(CURDIR)"
+	@echo "HOME = $(HOME)"
+	export GOENV='off'
+	export GO111MODULE='off'
+	export GOTOOLCHAIN="local" 
+	export GOFLAGS="--mod=vendor"
+	export CGO_ENABLED=1
+	cd vendor/github.com/fyne-io/tools && go build -o fyne ./cmd/fyne/. && cd ../../../../
+	vendor/github.com/fyne-io/tools/fyne build --release --output goxray-gui
+
+binary-arch: build
+
+%:
+	dh $@
+
+override_dh_builddeb:
+	dh_builddeb -- -Zgzip
+
+override_dh_dwz:
+	@echo 'DH_DWZ overridden'
+
+override_dh_auto_clean:
+	@echo 'DH_AUTO_CLEAN overridden'
+
+override_dh_auto_install:
+	@echo 'DH_AUTO_INSTALL overridden'
+

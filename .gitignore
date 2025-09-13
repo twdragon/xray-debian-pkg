@@ -1,0 +1,8 @@
+files
+.debhelper
+*.substvars
+*.log
+*.debhelper
+ipfs-kubo.bash-completion
+changelog
+

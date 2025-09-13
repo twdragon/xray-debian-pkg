@@ -1,0 +1,5 @@
+goxray-gui: not-using-po-debconf
+goxray-gui: custom-compression-in-debian-rules
+goxray-gui: source-is-missing
+goxray-gui: build-depends-on-metapackage
+

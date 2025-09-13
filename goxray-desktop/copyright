@@ -1,0 +1,11 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: goxray-gui
+Upstream-Contact: FYNE.IO Team <info@fyne.io>
+Source: https://github.com/goxray/desktop
+
+Files: *
+Copyright: 2025 FYNE.IO Team <info@fyne.io>
+License: GNU-GPL-3.0
+
+License: GNU-GPL-3.0
+  https://raw.githubusercontent.com/goxray/desktop/refs/heads/main/LICENSE
