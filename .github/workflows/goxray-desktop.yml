@@ -67,8 +67,8 @@ jobs:
             - name: Install Debian helper software
               run: |
                 sudo apt-get update
-                sudo apt-get install -y debhelper curl gcc sed gawk dpkg-dev build-essential devscripts
-                echo -e "\n## Building GoXRay-GUI\n\nInstalled Debian helper packages: \`debhelper curl gcc sed gawk dpkg-dev build-essential devscripts\`" >> ${GITHUB_STEP_SUMMARY}
+                sudo apt-get install -y debhelper curl gcc sed gawk dpkg-dev build-essential devscripts libgl-dev xorg-dev libxkbcommon-dev
+                echo -e "\n## Building GoXRay-GUI\n\nInstalled Debian helper packages: \`debhelper curl gcc sed gawk dpkg-dev build-essential devscripts libgl-dev xorg-dev libxkbcommon-dev\`" >> ${GITHUB_STEP_SUMMARY}
             - name: Clone GoXRay-GUI
               uses: actions/checkout@v4
               with:
