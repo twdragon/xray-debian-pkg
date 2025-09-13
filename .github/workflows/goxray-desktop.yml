@@ -14,7 +14,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 5
         outputs:
-            build_goxray_gui: ${{ steps.version_compare.outputs.goxray_gui }}
+            c: ${{ steps.version_compare.outputs.goxray_gui }}
         steps:
             - name: Extract last version from Debian repository and store it in the GitHub CI environment variable
               run: |
@@ -117,13 +117,13 @@ jobs:
                 sed -i -e "s/golang-[0-9]\+\.[0-9]\+/golang-${SHORT_GO_VERSION}/" ./debian/control
                 sed -i -e "s/\/go-[0-9]\+\.[0-9]\+/\/go-${SHORT_GO_VERSION}/" ./debian/rules
                 chmod +x ./debian/rules
-                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog noble goxray-gui "Stan B." godstanis@gmail.com "Stan B." low
+                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME }} goxray-gui "Stan B." godstanis@gmail.com "Stan B." low
                 GOFLAGS="--mod=vendor" debuild -b -uc -us -d
                 rm ./debian/changelog
                 rm -rf ./vendor
                 go mod vendor
                 cp -vr ../tools vendor/github.com/fyne-io/
-                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog noble goxray-gui "Stan B." godstanis@gmail.com "Stan B." low
+                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME } goxray-gui "Stan B." godstanis@gmail.com "Stan B." low
                 GOFLAGS="--mod=vendor" debuild -S -uc -us -d
                 mkdir packages
                 mv -v ../goxray-gui*.* packages/
