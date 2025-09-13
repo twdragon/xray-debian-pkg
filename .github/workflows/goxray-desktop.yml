@@ -80,7 +80,7 @@ jobs:
               run: |
                 cd goxray-gui
                 git checkout $(git describe --tags --abbrev=0)
-                GO_VERSION=$(grep -Po '(?<= GO_VERSION: )[0-9]+\.[0-9]+\..*$' go.mod)
+                GO_VERSION=$(grep -Po '(?<=go )[0-9]+\.[0-9]+\..*$' go.mod)
                 echo -e "GO_VERSION=${GO_VERSION}" >> ${GITHUB_ENV}
                 echo -e "\nRequired Go version parsed from \`go.mod\`: \`${GO_VERSION}\`" >> ${GITHUB_STEP_SUMMARY}
                 cd ..
