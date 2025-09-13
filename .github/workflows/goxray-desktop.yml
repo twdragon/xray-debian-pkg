@@ -14,7 +14,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 5
         outputs:
-            c: ${{ steps.version_compare.outputs.goxray_gui }}
+            build_goxray_gui: ${{ steps.version_compare.outputs.goxray_gui }}
         steps:
             - name: Extract last version from Debian repository and store it in the GitHub CI environment variable
               run: |
