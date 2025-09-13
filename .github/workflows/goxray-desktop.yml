@@ -108,11 +108,14 @@ jobs:
                 path: 'mkchangelog'
             - name: Compile GoXRay-GUI
               run: |
+                cd tools
+                go mod vendor
+                cd ..
                 cd goxray-gui
                 go mod vendor
                 mkdir debian
-                cp -vr ../debian-scripts/goxray-desktop/* ./debian/
-                cp -vr ../tools vendor/github.com/fyne-io/
+                cp -r ../debian-scripts/goxray-desktop/* ./debian/
+                cp -r ../tools vendor/github.com/fyne-io/
                 SHORT_GO_VERSION=$(echo -e "${{ env.GO_VERSION }}" | sed -e 's/\([0-9]\+\)\.\([0-9]\+\)\..*/\1.\2/')
                 sed -i -e "s/golang-[0-9]\+\.[0-9]\+/golang-${SHORT_GO_VERSION}/" ./debian/control
                 sed -i -e "s/\/go-[0-9]\+\.[0-9]\+/\/go-${SHORT_GO_VERSION}/" ./debian/rules
@@ -124,7 +127,7 @@ jobs:
                 go mod vendor
                 cp -vr ../tools vendor/github.com/fyne-io/
                 LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME }} goxray-gui "Stan B." godstanis@gmail.com "Stan B." low
-                GOFLAGS="--mod=vendor" debuild -S -uc -us -d
+                GOFLAGS="-mod=vendor" debuild -S -uc -us -d
                 mkdir packages
                 mv -v ../goxray-gui*.* packages/
                 echo -e "GoXRay-GUI compiled in:\n\`\`\`" >> ${GITHUB_STEP_SUMMARY}

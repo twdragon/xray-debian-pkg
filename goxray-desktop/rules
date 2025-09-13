@@ -10,7 +10,7 @@ build:
 	export GOENV='off'
 	export GO111MODULE='off'
 	export GOTOOLCHAIN="local" 
-	export GOFLAGS="--mod=vendor"
+	export GOFLAGS="-mod=vendor"
 	export CGO_ENABLED=1
 	cd vendor/github.com/fyne-io/tools && go build -o fyne ./cmd/fyne/. && cd ../../../../
 	vendor/github.com/fyne-io/tools/fyne build --release --output goxray-gui
