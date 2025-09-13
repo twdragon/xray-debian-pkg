@@ -62,7 +62,7 @@ jobs:
         timeout-minutes: 15
         needs: version_analyzer
         env:
-            build_goxray_gui: ${{ needs.version_analyzer.outputs.goxray_gui }}
+            build_goxray_gui: ${{ needs.version_analyzer.outputs.build_goxray_gui }}
         steps:
             - name: Install Debian helper software
               run: |
