@@ -56,3 +56,79 @@ jobs:
                     echo -e "\n - **GoXRay-GUI**: cannot found a release version, release sources for \`${GOXRAY_GUI_VERSION}\` will not be built" >> ${GITHUB_STEP_SUMMARY}
                     echo "goxray_gui=false" >> "$GITHUB_OUTPUT"
                 fi
+    build-kubo:
+        if: ${{ needs.version_analyzer.outputs.goxray_gui == 'true' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        needs: version_analyzer
+        env:
+            build_kubo: ${{ needs.version_analyzer.outputs.goxray_gui }}
+        steps:
+            - name: Install Debian helper software
+              run: |
+                sudo apt-get update
+                sudo apt-get install -y debhelper curl gcc sed gawk dpkg-dev build-essential devscripts
+                echo -e "\n## Building GoXRay-GUI\n\nInstalled Debian helper packages: \`debhelper curl gcc sed gawk dpkg-dev build-essential devscripts\`" >> ${GITHUB_STEP_SUMMARY}
+            - name: Clone GoXRay-GUI
+              uses: actions/checkout@v4
+              with:
+                submodules: 'true'
+                fetch-depth: 0
+                repository: 'goxray/desktop'
+                path: 'goxray-gui'
+            - name: Parse required Go version
+              run: |
+                cd goxray-gui
+                git checkout $(git describe --tags --abbrev=0)
+                GO_VERSION=$(grep -Po '(?<= GO_VERSION: )[0-9]+\.[0-9]+\..*$' go.mod)
+                echo -e "GO_VERSION=${GO_VERSION}" >> ${GITHUB_ENV}
+                echo -e "\nRequired Go version parsed from \`go.mod\`: \`${GO_VERSION}\`" >> ${GITHUB_STEP_SUMMARY}
+                cd ..
+            - name: Install Go compiler
+              uses: actions/setup-go@v5
+              with:
+                go-version: ${{ env.GO_VERSION }}
+            - name: Clone Debian maintaner scripts repository
+              uses: actions/checkout@v4
+              with:
+                path: 'debian-scripts'
+            - name: Clone Fyne Tools
+              uses: actions/checkout@v4
+              with:
+                submodules: 'true'
+                fetch-depth: 0
+                repository: 'fyne-io/tools'
+                path: 'tools'
+            - name: Clone mkchangelog
+              uses: actions/checkout@v4
+              with:
+                submodules: 'true'
+                fetch-depth: 0
+                repository: 'twdragon/mkchangelog'
+                path: 'mkchangelog'
+            - name: Compile GoXRay-GUI
+              run: |
+                cd goxray-gui
+                go mod vendor
+                mkdir debian
+                cp -vr ../debian-scripts/goxray-desktop/* ./debian/
+                cp -vr ../tools vendor/github.com/fyne-io/
+                SHORT_GO_VERSION=$(echo -e "${{ env.GO_VERSION }}" | sed -e 's/\([0-9]\+\)\.\([0-9]\+\)\..*/\1.\2/')
+                sed -i -e "s/golang-[0-9]\+\.[0-9]\+/golang-${SHORT_GO_VERSION}/" ./debian/control
+                sed -i -e "s/\/go-[0-9]\+\.[0-9]\+/\/go-${SHORT_GO_VERSION}/" ./debian/rules
+                chmod +x ./debian/rules
+                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog noble goxray-gui "Stan B." godstanis@gmail.com "Stan B." low
+                GOFLAGS="--mod=vendor" debuild -b -uc -us -d
+                rm ./debian/changelog
+                rm -rf ./vendor
+                go mod vendor
+                cp -vr ../tools vendor/github.com/fyne-io/
+                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog noble goxray-gui "Stan B." godstanis@gmail.com "Stan B." low
+                GOFLAGS="--mod=vendor" debuild -S -uc -us -d
+                mkdir packages
+                mv -v ../goxray-gui*.* packages/
+                echo -e "GoXRay-GUI compiled in:\n\`\`\`" >> ${GITHUB_STEP_SUMMARY}
+                ls -lh packages/ >> ${GITHUB_STEP_SUMMARY}
+                echo -e "\`\`\`\n"
+                cd ..
+
