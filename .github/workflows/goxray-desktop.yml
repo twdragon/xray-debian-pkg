@@ -57,7 +57,7 @@ jobs:
                     echo "goxray_gui=false" >> "$GITHUB_OUTPUT"
                 fi
     build_goxray_gui:
-        if: ${{ needs.version_analyzer.outputs.goxray_gui == 'true' }}
+        if: ${{ needs.version_analyzer.outputs.build_goxray_gui == 'true' }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         needs: version_analyzer
