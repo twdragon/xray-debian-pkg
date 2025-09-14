@@ -24,9 +24,7 @@ jobs:
                 echo -e "Trigger: \`${GITHUB_EVENT_NAME}\`" >> ${GITHUB_STEP_SUMMARY}
                 echo -e "\n## Version analyzer\n" >> ${GITHUB_STEP_SUMMARY}
                 echo 'Extracting version information from https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/noble/main/source/Sources.gz' >> ${GITHUB_STEP_SUMMARY}
-                curl https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/noble/main/source/Sources.gz --output Sources.gz
-                gzip --decompress Sources.gz
-                GOXRAY_GUI_VERSION_REPO=$(grep -A 10 "^Package: goxray-gui" Sources | grep -Po '(?<=^Version: )[0-9]+\.[0-9]+\.[0-9]+')
+                GOXRAY_GUI_VERSION_REPO='0.0.0'
                 echo "GOXRAY_GUI_VERSION_REPO=${GOXRAY_GUI_VERSION_REPO}" >> ${GITHUB_ENV}
                 echo -e "\`\`\`\nGOXRAY_GUI_VERSION_REPO=${GOXRAY_GUI_VERSION_REPO}" >> ${GITHUB_STEP_SUMMARY}
             - name: Clone GoXray-GUI
