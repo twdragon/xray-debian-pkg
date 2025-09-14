@@ -125,7 +125,7 @@ jobs:
                 rm ./debian/changelog
                 rm -rf ./vendor
                 go mod vendor
-                cp -vr ../tools vendor/github.com/fyne-io/
+                cp -r ../tools vendor/github.com/fyne-io/
                 rm -f vendor/github.com/getlantern/elevate/binaries/windows/elevate.exe
                 LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME }} goxray-gui "Stan B. and Contributors" godstanis@gmail.com "Stan B." low
                 GOFLAGS="-mod=vendor" debuild -S -uc -us -d
@@ -148,4 +148,9 @@ jobs:
                 gpg --import secret
                 rm -f secret
                 debsign -k "${{ secrets.DEBSIGN_SECRET_FP }}" $(find . -maxdepth 1 -name 'goxray-gui*_source.changes' -regextype egrep)
+                cd ../..
+            - name: Upload the built package to PPA
+              run: |
+                cd goxray-gui/packages
+                dput ppa:twdragon/xray $(find . -maxdepth 1 -name 'goxray-gui*_source.changes' -regextype egrep)
                 cd ../..
