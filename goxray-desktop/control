@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Standards-Version: 4.6.0
 Build-Depends: dpkg (>= 1.16.1), debhelper-compat (= 13), libgl-dev, xorg-dev, libxkbcommon-dev, golang-1.24
-Maintainer: FYNE.IO Team <info@fyne.io>
+Maintainer: Stan B. and Contributors <godstanis@gmail.com>
 Homepage: https://apps.fyne.io/apps/com.github.goxray.client.app.html
 Vcs-Git: https://github.com/goxray/desktop.git
 Rules-Requires-Root: no
