@@ -1,0 +1,32 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/architecture.mk
+
+build:
+	$(eval PATH := /usr/lib/go-1.24/bin:$(PATH))
+	$(eval HOME := $(CURDIR))
+	export HOME="$(CURDIR)"
+	@echo "HOME = $(HOME)"
+	export GOENV='off'
+	export GO111MODULE='off'
+	export GOTOOLCHAIN="local" 
+	export GOFLAGS="-mod=vendor"
+	go build -o goxray-cli
+
+binary-arch: build
+
+%:
+	dh $@
+
+override_dh_builddeb:
+	dh_builddeb -- -Zgzip
+
+override_dh_dwz:
+	@echo 'DH_DWZ overridden'
+
+override_dh_auto_clean:
+	@echo 'DH_AUTO_CLEAN overridden'
+
+override_dh_auto_install:
+	@echo 'DH_AUTO_INSTALL overridden'
+

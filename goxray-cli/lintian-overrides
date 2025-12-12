@@ -1,0 +1,4 @@
+goxray-cli: no-manual-page
+goxray-cli: hardening-no-pie
+goxray-cli: hardening-no-relro
+

@@ -1,0 +1,11 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: goxray-cli
+Upstream-Contact: Stan B. and Contributors <godstanis@gmail.com>
+Source: https://github.com/goxray/tun
+
+Files: *
+Copyright: 2025 Stan B. and Contributors <godstanis@gmail.com>
+License: MIT
+
+License: MIT
+  https://raw.githubusercontent.com/goxray/tun/refs/heads/main/LICENSE

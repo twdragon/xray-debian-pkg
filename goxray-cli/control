@@ -1,0 +1,17 @@
+Source: goxray-cli
+Section: net
+Priority: optional
+Standards-Version: 4.6.0
+Build-Depends: dpkg (>= 1.16.1), debhelper-compat (= 13), golang-1.24
+Maintainer: Stan B. and Contributors <godstanis@gmail.com>
+Homepage: https://github.com/goxray/tun
+Vcs-Git: https://github.com/goxray/tun.git
+Rules-Requires-Root: no
+
+Package: goxray-cli
+Architecture: any
+Pre-Depends: debconf (>= 0.2.26), coreutils (>= 5.2.0), bash (>= 3.0), libcap2-bin
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: CLI/TUN VPN client for XRay
+ This project brings fully functional VPN client implementation written in Go.
+
