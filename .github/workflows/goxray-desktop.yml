@@ -121,6 +121,7 @@ jobs:
                 SHORT_GO_VERSION=$(echo -e "${{ env.GO_VERSION }}" | sed -e 's/\([0-9]\+\)\.\([0-9]\+\)\..*/\1.\2/')
                 sed -i -e "s/golang-[0-9]\+\.[0-9]\+/golang-${SHORT_GO_VERSION}/" ./debian/control
                 sed -i -e "s/\/go-[0-9]\+\.[0-9]\+/\/go-${SHORT_GO_VERSION}/" ./debian/rules
+                sed -i -e "s/go\ [0-9]*\.[0-9]*\..*/go\ ${SHORT_GO_VERSION}/" ./go.mod
                 chmod +x ./debian/rules
                 LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME }} goxray-gui "Stan B. and Contributors" godstanis@gmail.com "Stan B." low
                 GOFLAGS="--mod=vendor" debuild -b -uc -us -d
