@@ -1,0 +1,19 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: xray-geoip
+Upstream-Contact: LoyalSoldier and Contributors <noemail@xtls.github.io>
+Source: https://github.com/Loyalsoldier/v2ray-rules-dat.git
+
+Files: geosite.dat geoip.dat
+Copyright: 2026 LoyalSoldier and Contributors <noemail@xtls.github.io>
+License: GPL-3.0
+
+Files: debian/*
+Copyright: 2026 twdragon <twdragon@twdragon.net>
+License: MIT
+
+License: MIT
+ https://opensource.org/license/mit
+
+License: GPL-3.0
+ https://www.gnu.org/licenses/gpl-3.0.html
+

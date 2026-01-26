@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+if systemctl list-unit-files | grep -q "^xray" 
+then
+    if systemctl is-active --quiet "xray"
+    then
+        deb-systemd-invoke stop xray.service
+    fi
+fi
+
+#DEBHELPER#
+

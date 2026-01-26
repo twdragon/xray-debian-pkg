@@ -1,0 +1,8 @@
+xray-server: using-first-person-in-templates
+xray-server: no-manual-page
+xray-server: hardening-no-pie
+xray-server: bash-completion-with-hashbang
+xray-server: recursive-privilege-change
+xray-server: executable-not-elf-or-script
+xray-server: hardening-no-relro
+

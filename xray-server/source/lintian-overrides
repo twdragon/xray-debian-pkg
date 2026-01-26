@@ -1,0 +1,6 @@
+xray-server: not-using-po-debconf
+xray-server: custom-compression-in-debian-rules
+xray-server: source-is-missing
+xray-server: build-depends-on-metapackage
+xray-server: syntax-error-in-dep5-copyright
+xray-server: debhelper-but-no-misc-depends

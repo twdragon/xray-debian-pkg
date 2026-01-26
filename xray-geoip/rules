@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpkg/architecture.mk
+
+%:
+	dh $@
+
+override_dh_builddeb:
+	dh_builddeb -- -Zgzip
+
+override_dh_dwz:
+	@echo 'DH_DWZ overridden'
+
+override_dh_auto_clean:
+	@echo 'DH_AUTO_CLEAN overridden'
+
+override_dh_auto_install:
+	@echo 'DH_AUTO_INSTALL overridden'
+

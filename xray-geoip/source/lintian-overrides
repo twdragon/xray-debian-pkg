@@ -1,0 +1,7 @@
+xray-geoip: not-using-po-debconf
+xray-geoip: custom-compression-in-debian-rules
+xray-geoip: source-is-missing
+xray-geoip: build-depends-on-metapackage
+xray-geoip: syntax-error-in-dep5-copyright
+xray-geoip: debhelper-but-no-misc-depends
+xray-geoip: latest-debian-changelog-entry-without-new-date

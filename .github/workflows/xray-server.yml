@@ -1,6 +1,6 @@
 on:
     schedule:
-        - cron: '45 15 * * 2,4,6'
+        - cron: '30 18 * * 3,5'
     push:
         branches:
             - 'main'
@@ -14,11 +14,11 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 5
         outputs:
-            build_goxray_cli: ${{ steps.version_compare.outputs.goxray_cli }}
+            build_xray_server: ${{ steps.version_compare.outputs.xray_server }}
         steps:
             - name: Extract last version from Debian repository and store it in the GitHub CI environment variable
               run: |
-                echo -e "# GoXRay-CLI Debian Package Builder CI Process \n\nBuild started: $(date +"%a, %d %b %Y %H:%M:%S %z")" >> ${GITHUB_STEP_SUMMARY}
+                echo -e "# XRay-core Server Debian Package Builder CI Process \n\nBuild started: $(date +"%a, %d %b %Y %H:%M:%S %z")" >> ${GITHUB_STEP_SUMMARY}
                 echo -e "Run ID: \`${GITHUB_RUN_NUMBER}\`" >> ${GITHUB_STEP_SUMMARY}
                 echo -e "Workflow YML hash: \`${GITHUB_WORKFLOW_SHA}\`" >> ${GITHUB_STEP_SUMMARY}
                 echo -e "Trigger: \`${GITHUB_EVENT_NAME}\`" >> ${GITHUB_STEP_SUMMARY}
@@ -26,16 +26,23 @@ jobs:
                 echo 'Extracting version information from https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/noble/main/source/Sources.gz' >> ${GITHUB_STEP_SUMMARY}
                 curl https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/noble/main/source/Sources.gz --output Sources.gz
                 gzip --decompress Sources.gz
-                GOXRAY_CLI_VERSION_REPO=$(grep -A 10 "^Package: goxray-cli" Sources | grep -Po '(?<=^Version: )[0-9]+\.[0-9]+\.[0-9]+')
-                echo "GOXRAY_CLI_VERSION_REPO=${GOXRAY_CLI_VERSION_REPO}" >> ${GITHUB_ENV}
-                echo -e "\`\`\`\nGOXRAY_CLI_VERSION_REPO=${GOXRAY_CLI_VERSION_REPO}" >> ${GITHUB_STEP_SUMMARY}
-            - name: Clone GoXray-CLI
+                XRAY_SERVER_VERSION_REPO=$(grep -A 10 "^Package: xray-server" Sources | grep -Po '(?<=^Version: )[0-9]+\.[0-9]+\.[0-9]+')
+                echo "XRAY_SERVER_VERSION_REPO=${XRAY_SERVER_VERSION_REPO}" >> ${GITHUB_ENV}
+                echo -e "\`\`\`\XRAY_SERVER_VERSION_REPO=${XRAY_SERVER_VERSION_REPO}" >> ${GITHUB_STEP_SUMMARY}
+            - name: Clone XRay-core
               uses: actions/checkout@v4
               with:
                 submodules: 'true'
                 fetch-depth: 0
-                repository: 'goxray/tun'
-                path: 'goxray-cli'
+                repository: 'XTLS/Xray-core'
+                path: 'xray-server'
+            - name: Clone mkchangelog
+              uses: actions/checkout@v4
+              with:
+                submodules: 'true'
+                fetch-depth: 0
+                repository: 'twdragon/mkchangelog'
+                path: 'mkchangelog'
             - name: Clone Debian maintaner scripts repository
               uses: actions/checkout@v4
               with:
@@ -43,44 +50,52 @@ jobs:
             - name: Extract last tagged version from Github repository and store it in the GitHub CI environment variable
               run: |
                 echo -e "\nExtracting and analyzing annotated tags from Git repositories." >> ${GITHUB_STEP_SUMMARY}
-                cd goxray-cli
-                GOXRAY_CLI_VERSION=$(git describe --tags --abbrev=0 | grep -o -E '[0-9]+\.[0-9]+\.[0-9]+')
-                echo "GOXRAY_CLI_VERSION=${GOXRAY_CLI_VERSION}" >> ${GITHUB_ENV}
-                echo -e "\`\`\`\nGOXRAY_CLI_VERSION=${GOXRAY_CLI_VERSION}" >> ${GITHUB_STEP_SUMMARY}
+                cd xray-server
+                XRAY_SERVER_VERSION=$(../mkchangelog/get-latest-semver-tag HEAD)
+                rm -rf ../mkchangelog
+                echo "XRAY_SERVER_VERSION=${XRAY_SERVER_VERSION}" >> ${GITHUB_ENV}
+                echo -e "\`\`\`\XRAY_SERVER_VERSION=${XRAY_SERVER_VERSION}" >> ${GITHUB_STEP_SUMMARY}
             - name: Version comparison
               id: version_compare
               run: |
-                if $(dpkg --compare-versions "${GOXRAY_CLI_VERSION}" "gt" "${GOXRAY_CLI_VERSION_REPO}")
+                if $(dpkg --compare-versions "${XRAY_SERVER_VERSION}" "gt" "${XRAY_SERVER_VERSION_REPO}")
                 then
-                    echo -e "\n - **GoXRay-CLI**: found a release version \`${GOXRAY_CLI_VERSION}\` > \`${GOXRAY_CLI_VERSION_REPO}\`, running build" >> ${GITHUB_STEP_SUMMARY}
-                    echo "goxray_cli=true" >> "$GITHUB_OUTPUT"
+                    echo -e "\n - **XRay-core**: found a release version \`${XRAY_SERVER_VERSION}\` > \`${XRAY_SERVER_VERSION_REPO}\`, running build" >> ${GITHUB_STEP_SUMMARY}
+                    echo "xray_server=true" >> "$GITHUB_OUTPUT"
                 else
-                    echo -e "\n - **GoXRay-CLI**: cannot found a release version, release sources for \`${GOXRAY_CLI_VERSION}\` will not be built" >> ${GITHUB_STEP_SUMMARY}
-                    echo "goxray_cli=false" >> "$GITHUB_OUTPUT"
+                    echo -e "\n - **XRay-core**: cannot found a release version, release sources for \`${XRAY_SERVER_VERSION}\` will not be built" >> ${GITHUB_STEP_SUMMARY}
+                    echo "xray_server=false" >> "$GITHUB_OUTPUT"
                 fi
-    build_goxray_cli:
-        if: ${{ needs.version_analyzer.outputs.build_goxray_cli == 'true' }}
+    build_xray_server:
+        if: ${{ needs.version_analyzer.outputs.build_xray_server == 'true' }}
         runs-on: ubuntu-latest
         timeout-minutes: 15
         needs: version_analyzer
         env:
-            build_goxray_cli: ${{ needs.version_analyzer.outputs.build_goxray_cli }}
+            build_xray_server: ${{ needs.version_analyzer.outputs.build_xray_server }}
         steps:
             - name: Install Debian helper software
               run: |
                 sudo apt-get update
                 sudo apt-get install -y debhelper curl gcc sed gawk dpkg-dev build-essential devscripts
-                echo -e "\n## Building GoXRay-CLI\n\nInstalled Debian helper packages: \`debhelper curl gcc sed gawk dpkg-dev build-essential devscripts\`" >> ${GITHUB_STEP_SUMMARY}
-            - name: Clone GoXRay-CLI
+                echo -e "\n## Building XRay-core Server \n\nInstalled Debian helper packages: \`debhelper curl gcc sed gawk dpkg-dev build-essential devscripts\`" >> ${GITHUB_STEP_SUMMARY}
+            - name: Clone XRay-core
               uses: actions/checkout@v4
               with:
                 submodules: 'true'
                 fetch-depth: 0
-                repository: 'goxray/tun'
-                path: 'goxray-cli'
+                repository: 'XTLS/Xray-core'
+                path: 'xray-server'
+            - name: Clone XRay-examples
+              uses: actions/checkout@v4
+              with:
+                submodules: 'false'
+                fetch-depth: 0
+                repository: 'XTLS/Xray-examples'
+                path: 'xray-examples'
             - name: Parse required Go version
               run: |
-                cd goxray-cli
+                cd xray-server
                 git checkout $(git describe --tags --abbrev=0)
                 GO_VERSION=$(grep -Po '(?<=go )[0-9]+\.[0-9]+\..*$' go.mod)
                 echo -e "GO_VERSION=${GO_VERSION}" >> ${GITHUB_ENV}
@@ -101,46 +116,51 @@ jobs:
                 fetch-depth: 0
                 repository: 'twdragon/mkchangelog'
                 path: 'mkchangelog'
-            - name: Compile GoXRay-CLI
+            - name: Compile XRay
               run: |
-                cd goxray-cli
+                cd xray-server
                 go mod vendor
                 mkdir debian
-                cp -r ../debian-scripts/goxray-cli/* ./debian/
+                cp -r ../debian-scripts/xray-server/* ./debian/
+                mkdir examples
+                rm -f ../xray-examples/README.md
+                rm -f ../xray-examples/LICENSE
+                cp -r ../xray-examples/* ./examples
                 SHORT_GO_VERSION=$(echo -e "${{ env.GO_VERSION }}" | sed -e 's/\([0-9]\+\)\.\([0-9]\+\)\..*/\1.\2/')
                 sed -i -e "s/golang-[0-9]\+\.[0-9]\+/golang-${SHORT_GO_VERSION}/" ./debian/control
                 sed -i -e "s/\/go-[0-9]\+\.[0-9]\+/\/go-${SHORT_GO_VERSION}/" ./debian/rules
                 chmod +x ./debian/rules
-                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME }} goxray-cli "Stan B. and Contributors" godstanis@gmail.com "Stan B." low
+                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME }} xray-server "Project X Community and Contributors" noemail@xtls.github.io "Project X" low
                 GOFLAGS="--mod=vendor" debuild -b -uc -us -d
                 rm ./debian/changelog
                 rm -rf ./vendor
+                rm -f ./xray
                 go mod vendor
-                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME }} goxray-cli "Stan B. and Contributors" godstanis@gmail.com "Stan B." low
+                LC_TIME=en_US.UTF-8 ../mkchangelog/mkchangelog debian/changelog ${{ env.UBUNTU_CODENAME }} xray-server "Project X Community and Contributors" noemail@xtls.github.io "Project X" low
                 GOFLAGS="-mod=vendor" debuild -S -uc -us -d
                 mkdir packages
-                mv -v ../goxray-cli*.* packages/
-                echo -e "GoXRay-CLI compiled in:\n\`\`\`" >> ${GITHUB_STEP_SUMMARY}
+                mv -v ../xray-server*.* packages/
+                echo -e "XRay compiled in:\n\`\`\`" >> ${GITHUB_STEP_SUMMARY}
                 ls -lh packages/ >> ${GITHUB_STEP_SUMMARY}
                 echo -e "\`\`\`\n"
                 cd ..
             - name: Upload unsigned packages
               uses: actions/upload-artifact@v4
               with:
-                name: goxray-cli-ubuntu-ppa
-                path: goxray-cli/packages/goxray-cli*.*
+                name: xray-server-ubuntu-ppa
+                path: xray-server/packages/xray-server*.*
             - name: Sign the source package
               run: |
-                cd goxray-cli/packages
-                echo -e "\nSigning GoXRay-CLI:\n\`\`\`\n $(find . -maxdepth 1 -name 'goxray-cli*_source.changes' -regextype egrep -exec cat {} \;) \n\`\`\`" >> ${GITHUB_STEP_SUMMARY}
+                cd xray-server/packages
+                echo -e "\nSigning XRay:\n\`\`\`\n $(find . -maxdepth 1 -name 'xray-server*_source.changes' -regextype egrep -exec cat {} \;) \n\`\`\`" >> ${GITHUB_STEP_SUMMARY}
                 echo "${{ secrets.DEBSIGN_SECRET_KEY }}" | base64 -d > secret
                 gpg --import secret
                 rm -f secret
-                debsign -k "${{ secrets.DEBSIGN_SECRET_FP }}" $(find . -maxdepth 1 -name 'goxray-cli*_source.changes' -regextype egrep)
+                debsign -k "${{ secrets.DEBSIGN_SECRET_FP }}" $(find . -maxdepth 1 -name 'xray-server*_source.changes' -regextype egrep)
                 cd ../..
             - name: Upload the built package to PPA
               run: |
-                cd goxray-cli/packages
-                dput ppa:twdragon/xray $(find . -maxdepth 1 -name 'goxray-cli*_source.changes' -regextype egrep)
+                cd xray-server/packages
+                dput ppa:twdragon/xray $(find . -maxdepth 1 -name 'xray-server*_source.changes' -regextype egrep)
                 cd ../..
 

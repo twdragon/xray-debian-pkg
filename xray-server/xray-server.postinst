@@ -1,0 +1,96 @@
+#!/bin/bash
+set -e
+source /usr/share/debconf/confmodule
+db_version 2.0
+
+case "$1" in
+    configure)
+        # User/group
+        if ! getent group "xray" &>/dev/null 
+        then
+            addgroup --system "xray"
+        fi
+        if ! id "xray" &>/dev/null
+        then
+            adduser --system --home "/nonexistent" --no-create-home --disabled-password --disabled-login --gecos "xray" --ingroup "xray" "xray"
+        fi
+        # Runtime directory
+        if [[ ! -d "/var/run/xray" ]]
+        then
+            mkdir -p "/var/run/xray"
+            chown xray:xray "/var/run/xray"
+            chmod 0755 "/var/run/xray"
+        fi
+        if [[ ! -d "/etc/xray/config.d" ]]
+        then
+            mkdir -p "/etc/xray/config.d"
+        fi
+        # Config directory: default only
+        if [[ ! -d "/etc/xray/config" ]]
+        then
+            mkdir -p "/etc/xray/config"
+            echo '{}' > "/etc/xray/config/api.json"
+            echo '{}' > "/etc/xray/config/routing.json"
+            echo '{}' > "/etc/xray/config/policy.json"
+            echo '{}' > "/etc/xray/config/inbounds.json"
+            echo '{}' > "/etc/xray/config/outbounds.json"
+            echo '{}' > "/etc/xray/config/transport.json"
+            echo '{}' > "/etc/xray/config/stats.json"
+            echo '{}' > "/etc/xray/config/reverse.json"
+            cat > "/etc/xray/config/log.json" <<EOF
+{
+    "log": {
+	"access": "/var/log/xray/access.log",
+	"error": "/var/log/xray/error.log",
+        "loglevel": "none",
+        "dnsLog": true
+    }
+}
+EOF
+            cat > "/etc/xray/config/dns.json" <<EOF
+{
+    "dns":{
+	"hosts": {
+	    "domain:googleapis.cn": "googleapis.com",
+	    "google.ru": "google.com",
+	    "google.cn": "google.tw"
+	},
+	"servers":[
+	    "8.8.4.4",
+	    "1.1.1.1"
+	],
+	"queryStrategy": "UseIP",
+	"disableCache": false,
+	"disableFallback": false,
+	"disableFallbackIfMatch": false,
+	"tag": "main_dns"
+    }
+}
+EOF
+        fi
+        if [[ -z "${2}" ]]
+        then
+            deb-systemd-helper enable xray.service
+            deb-systemd-invoke start xray.service
+        else
+            deb-systemd-helper reenable xray.service
+            deb-systemd-invoke start xray.service
+        fi
+    ;;
+
+    upgrade)
+        deb-systemd-invoke restart xray.service
+    ;;
+    
+    abort-upgrade)
+        deb-systemd-invoke stop xray.service
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+

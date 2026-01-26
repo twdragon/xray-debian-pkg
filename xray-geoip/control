@@ -1,0 +1,20 @@
+Source: xray-geoip
+Section: net
+Priority: optional
+Standards-Version: 4.6.0
+Build-Depends: dpkg (>= 1.16.1), debhelper-compat (= 13)
+Maintainer: LoyalSoldier <noemail@xtls.github.io>
+Homepage: https://github.com/Loyalsoldier/v2ray-rules-dat
+Vcs-Git: https://github.com/Loyalsoldier/v2ray-rules-dat.git
+Rules-Requires-Root: no
+
+Package: xray-geoip
+Architecture: any
+Pre-Depends: debconf (>= 0.2.26), coreutils (>= 5.2.0), bash (>= 3.0)
+Depends: xray-server
+Description: GeoIP database for Xray
+ The geographic IP database by LoyalSoldier. Includes China, Iran, Russia, and
+ many others.
+ Repository: https://github.com/Loyalsoldier/v2ray-rules-dat
+ Releases: https://github.com/Loyalsoldier/v2ray-rules-dat/releases
+

@@ -1,0 +1,142 @@
+on:
+    schedule:
+        - cron: '00 18 * * 5'
+    push:
+        branches:
+            - 'main'
+defaults:
+    run:
+        shell: bash
+env:
+    UBUNTU_CODENAME: noble
+jobs:
+    version_analyzer:
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        outputs:
+            build_xray_geoip: ${{ steps.version_compare.outputs.xray_geoip }}
+        steps:
+            - name: Extract last version from Debian repository and store it in the GitHub CI environment variable
+              run: |
+                echo -e "# XRay GeoIP Database Debian Package Builder CI Process \n\nBuild started: $(date +"%a, %d %b %Y %H:%M:%S %z")" >> ${GITHUB_STEP_SUMMARY}
+                echo -e "Run ID: \`${GITHUB_RUN_NUMBER}\`" >> ${GITHUB_STEP_SUMMARY}
+                echo -e "Workflow YML hash: \`${GITHUB_WORKFLOW_SHA}\`" >> ${GITHUB_STEP_SUMMARY}
+                echo -e "Trigger: \`${GITHUB_EVENT_NAME}\`" >> ${GITHUB_STEP_SUMMARY}
+                echo -e "\n## Version analyzer\n" >> ${GITHUB_STEP_SUMMARY}
+                echo 'Extracting version information from https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/noble/main/source/Sources.gz' >> ${GITHUB_STEP_SUMMARY}
+                curl https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/noble/main/source/Sources.gz --output Sources.gz
+                gzip --decompress Sources.gz
+                XRAY_GEOIP_VERSION_REPO=$(grep -A 10 "^Package: xray-geoip" Sources | grep -Po '(?<=^Version: )[0-9]+')
+                echo "XRAY_GEOIP_VERSION_REPO=${XRAY_GEOIP_VERSION_REPO}" >> ${GITHUB_ENV}
+                echo -e "\`\`\`\XRAY_GEOIP_VERSION_REPO=${XRAY_GEOIP_VERSION_REPO}" >> ${GITHUB_STEP_SUMMARY}
+            - name: Clone GeoIP database repository
+              uses: actions/checkout@v4
+              with:
+                submodules: 'false'
+                fetch-depth: 0
+                repository: 'Loyalsoldier/v2ray-rules-dat'
+                path: 'xray-geoip'
+            - name: Clone Debian maintaner scripts repository
+              uses: actions/checkout@v4
+              with:
+                path: 'debian-scripts'
+            - name: Extract last tagged version from Github repository and store it in the GitHub CI environment variable
+              run: |
+                echo -e "\nExtracting and analyzing annotated tags from Git repositories." >> ${GITHUB_STEP_SUMMARY}
+                cd xray-geoip
+                XRAY_GEOIP_VERSION=$(git describe --tags --abbrev=0)
+                echo "XRAY_GEOIP_VERSION=${XRAY_GEOIP_VERSION}" >> ${GITHUB_ENV}
+                echo -e "\`\`\`\XRAY_GEOIP_VERSION=${XRAY_GEOIP_VERSION}" >> ${GITHUB_STEP_SUMMARY}
+            - name: Version comparison
+              id: version_compare
+              run: |
+                if $(dpkg --compare-versions "${XRAY_GEOIP_VERSION}" "gt" "${XRAY_GEOIP_VERSION_REPO}")
+                then
+                    echo -e "\n - **XRay GeoIP Database**: found a release version \`${XRAY_GEOIP_VERSION}\` > \`${XRAY_GEOIP_VERSION_REPO}\`, running build" >> ${GITHUB_STEP_SUMMARY}
+                    echo "xray_geoip=true" >> "$GITHUB_OUTPUT"
+                else
+                    echo -e "\n - **XRay GeoIP Database**: cannot found a release version, release sources for \`${XRAY_GEOIP_VERSION}\` will not be built" >> ${GITHUB_STEP_SUMMARY}
+                    echo "xray_geoip=false" >> "$GITHUB_OUTPUT"
+                fi
+    build_xray_geoip:
+        if: ${{ needs.version_analyzer.outputs.build_xray_geoip == 'true' }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        needs: version_analyzer
+        env:
+            build_xray_geoip: ${{ needs.version_analyzer.outputs.build_xray_geoip }}
+        steps:
+            - name: Install Debian helper software
+              run: |
+                sudo apt-get update
+                sudo apt-get install -y debhelper curl gcc sed gawk dpkg-dev build-essential devscripts
+                echo -e "\n## Building XRay GeoIP Database\n\nInstalled Debian helper packages: \`debhelper curl gcc sed gawk dpkg-dev build-essential devscripts\`" >> ${GITHUB_STEP_SUMMARY}
+            - name: Clone GeoIP database repository
+              uses: actions/checkout@v4
+              with:
+                submodules: 'false'
+                fetch-depth: 0
+                repository: 'Loyalsoldier/v2ray-rules-dat'
+                path: 'xray-geoip'
+            - name: Clone Debian maintaner scripts repository
+              uses: actions/checkout@v4
+              with:
+                path: 'debian-scripts'
+            - name: Retrieve geoip files and make changelog
+              run: |
+                mkdir -p geoip/debian
+                cd xray-geoip
+                LAST_GEOIP_RELEASE_NAME=$(git describe --tags --abbrev=0)
+                curl -L "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geosite.dat" > ../geoip/geosite.dat
+                curl -L "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geosite.dat.sha256sum" > ../geoip/geosite.dat.sha256sum
+                curl -L "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geoip.dat" > ../geoip/geoip.dat
+                curl -L "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geoip.dat.sha256sum" > ../geoip/geoip.dat.sha256sum
+                echo -e "\nRetrieved GeoIP files release name: \`${LAST_GEOIP_RELEASE_NAME}\`" >> ${GITHUB_STEP_SUMMARY}
+                for VERSION_TAG in $(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags)
+                do 
+                echo -e "xray-geoip (${VERSION_TAG}) ${{ env.UBUNTU_CODENAME }}; urgency=low\n" >> ../geoip/debian/changelog
+                echo -e "  [ LoyalSoldier and Contrubutors ]\n  * Update ${VERSION_TAG}\n" >> ../geoip/debian/changelog
+                TAG_CREATED=$(git log -1 --format=%ct "${VERSION_TAG}")
+                TAG_TIMESTAMP=$(LC_TIME=en_US.UTF-8 date -d "@${TAG_CREATED}" +"%a, %d %b %Y %H:%M:%S %z")
+                echo -e " -- LoyalSoldier and Contrubutors <noemail@xtls.github.io>  ${TAG_TIMESTAMP}\n" >> ../geoip/debian/changelog
+                done
+                cd ..
+            - name: Checksum verification
+              run: |
+                cd geoip
+                sha256sum -c geoip.dat.sha256sum
+                sha256sum -c geosite.dat.sha256sum
+                rm geoip.dat.sha256sum
+                rm geosite.dat.sha256sum
+                cd ..
+            - name: Compile package (source only)
+              run: |
+                cd geoip
+                cp -r ../debian-scripts/xray-geoip/* ./debian/
+                debuild -S -uc -us -d
+                debuild -b -uc -us -d
+                mkdir packages
+                mv -v ../xray-geoip*.* packages/
+                echo -e "XRay GeoIP Database compiled in:\n\`\`\`" >> ${GITHUB_STEP_SUMMARY}
+                ls -lh packages/ >> ${GITHUB_STEP_SUMMARY}
+                echo -e "\`\`\`\n"
+                cd ..
+            - name: Upload unsigned packages
+              uses: actions/upload-artifact@v4
+              with:
+                name: xray-geoip-ubuntu-ppa
+                path: geoip/packages/xray-geoip*.*
+            - name: Sign the source package
+              run: |
+                cd geoip/packages
+                echo -e "\nSigning XRay GeoIP Database:\n\`\`\`\n $(find . -maxdepth 1 -name 'xray-geoip*_source.changes' -regextype egrep -exec cat {} \;) \n\`\`\`" >> ${GITHUB_STEP_SUMMARY}
+                echo "${{ secrets.DEBSIGN_SECRET_KEY }}" | base64 -d > secret
+                gpg --import secret
+                rm -f secret
+                debsign -k "${{ secrets.DEBSIGN_SECRET_FP }}" $(find . -maxdepth 1 -name 'xray-geoip*_source.changes' -regextype egrep)
+                cd ../..
+            - name: Upload the built package to PPA
+              run: |
+                cd geoip/packages
+                dput ppa:twdragon/xray $(find . -maxdepth 1 -name 'xray-geoip*_source.changes' -regextype egrep)
+                cd ../..

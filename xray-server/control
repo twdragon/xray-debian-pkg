@@ -1,0 +1,28 @@
+Source: xray-server
+Section: net
+Priority: optional
+Standards-Version: 4.6.0
+Build-Depends: dpkg (>= 1.16.1), debhelper-compat (= 13), golang-1.25
+Maintainer: Project X Community and Contributors <noemail@xtls.github.io>
+Homepage: https://xtls.github.io
+Vcs-Git: https://github.com/XTLS/Xray-core.git
+Rules-Requires-Root: no
+
+Package: xray-server
+Architecture: any
+Pre-Depends: debconf (>= 0.2.26), coreutils (>= 5.2.0), bash (>= 3.0), adduser
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: xray-examples, xray-geoip
+Description: Xray, Penetrates Everything
+ Fully functional proxy/VPN server/client supporting many modern protocols and
+ transports, including VLESS, XHTTP, Hysteria, and many others. The
+ configuration examples and templates live in the xray-server-examples
+ package.
+
+Package: xray-examples
+Architecture: any
+Pre-Depends: debconf (>= 0.2.26), coreutils (>= 5.2.0), bash (>= 3.0)
+Depends: xray-server
+Description: Configuration Examples for XRay Proxy Server
+ Example configurations for many types of XRay proxy server deployment.
+

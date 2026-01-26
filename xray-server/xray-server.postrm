@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+source /usr/share/debconf/confmodule
+db_version 2.0
+
+if [[ "${1}" == "purge" ]]
+then
+    deb-systemd-helper purge xray.service
+    deb-systemd-helper purge xray@.service
+    rm -rf "/etc/xray"
+    rm -rf "/var/log/xray"
+    rm -rf "/var/run/xray"
+    db_purge || true
+else
+    deb-systemd-helper disable xray.service
+    deb-systemd-helper disable xray@.service
+fi
+
+#DEBHELPER#
+
