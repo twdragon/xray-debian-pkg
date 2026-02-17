@@ -85,7 +85,7 @@ jobs:
               run: |
                 mkdir -p geoip/debian
                 cd xray-geoip
-                git fetch --tags --all origin
+                git fetch --tags --all
                 LAST_GEOIP_RELEASE_NAME=$(git for-each-ref --format '%(refname:short)' refs/tags/ | tail -n 1)
                 echo -e "\nRelease file link used: \` https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME} \`\n" >> ${GITHUB_STEP_SUMMARY}
                 wget "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geosite.dat"
