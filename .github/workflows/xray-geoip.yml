@@ -44,7 +44,7 @@ jobs:
               run: |
                 echo -e "\nExtracting and analyzing annotated tags from Git repositories." >> ${GITHUB_STEP_SUMMARY}
                 cd xray-geoip
-                XRAY_GEOIP_VERSION=$(git describe --tags --abbrev=0)
+                XRAY_GEOIP_VERSION=$(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags | head -n 1)
                 echo "XRAY_GEOIP_VERSION=${XRAY_GEOIP_VERSION}" >> ${GITHUB_ENV}
                 echo -e "\`\`\`\nXRAY_GEOIP_VERSION=${XRAY_GEOIP_VERSION}" >> ${GITHUB_STEP_SUMMARY}
             - name: Version comparison
@@ -86,7 +86,7 @@ jobs:
               run: |
                 mkdir -p geoip/debian
                 cd xray-geoip
-                LAST_GEOIP_RELEASE_NAME=$(git describe --tags --abbrev=0)
+                LAST_GEOIP_RELEASE_NAME=$(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags | head -n 1)
                 curl -L "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geosite.dat" > ../geoip/geosite.dat
                 curl -L "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geosite.dat.sha256sum" > ../geoip/geosite.dat.sha256sum
                 curl -L "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geoip.dat" > ../geoip/geoip.dat
