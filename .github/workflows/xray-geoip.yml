@@ -86,7 +86,7 @@ jobs:
               run: |
                 mkdir -p geoip/debian
                 cd xray-geoip
-                LAST_GEOIP_RELEASE_NAME=$(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags | head -n 1)
+                LAST_GEOIP_RELEASE_NAME=$(git for-each-ref --format '%(refname:short)' refs/tags/ | tail -1)
                 curl -L "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geosite.dat" > ../geoip/geosite.dat
                 curl -L "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geosite.dat.sha256sum" > ../geoip/geosite.dat.sha256sum
                 curl -L "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geoip.dat" > ../geoip/geoip.dat
@@ -94,11 +94,11 @@ jobs:
                 echo -e "\nRetrieved GeoIP files release name: \`${LAST_GEOIP_RELEASE_NAME}\`" >> ${GITHUB_STEP_SUMMARY}
                 for VERSION_TAG in $(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags)
                 do 
-                echo -e "xray-geoip (${VERSION_TAG}) ${{ env.UBUNTU_CODENAME }}; urgency=low\n" >> ../geoip/debian/changelog
-                echo -e "  [ LoyalSoldier and Contrubutors ]\n  * Update ${VERSION_TAG}\n" >> ../geoip/debian/changelog
-                TAG_CREATED=$(git log -1 --format=%ct "${VERSION_TAG}")
-                TAG_TIMESTAMP=$(LC_TIME=en_US.UTF-8 date -d "@${TAG_CREATED}" +"%a, %d %b %Y %H:%M:%S %z")
-                echo -e " -- LoyalSoldier and Contrubutors <noemail@xtls.github.io>  ${TAG_TIMESTAMP}\n" >> ../geoip/debian/changelog
+                    echo -e "xray-geoip (${VERSION_TAG}) ${{ env.UBUNTU_CODENAME }}; urgency=low\n" >> ../geoip/debian/changelog
+                    echo -e "  [ LoyalSoldier and Contrubutors ]\n  * Update ${VERSION_TAG}\n" >> ../geoip/debian/changelog
+                    TAG_CREATED=$(git log -1 --format=%ct "${VERSION_TAG}")
+                    TAG_TIMESTAMP=$(LC_TIME=en_US.UTF-8 date -d "@${TAG_CREATED}" +"%a, %d %b %Y %H:%M:%S %z")
+                    echo -e " -- LoyalSoldier and Contrubutors <noemail@xtls.github.io>  ${TAG_TIMESTAMP}\n" >> ../geoip/debian/changelog
                 done
                 cd ..
             - name: Checksum verification
