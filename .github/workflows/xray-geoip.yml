@@ -44,7 +44,7 @@ jobs:
               run: |
                 echo -e "\nExtracting and analyzing annotated tags from Git repositories." >> ${GITHUB_STEP_SUMMARY}
                 cd xray-geoip
-                XRAY_GEOIP_VERSION=$(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags | head -n 1)
+                XRAY_GEOIP_VERSION=$(git for-each-ref --format '%(refname:short)' refs/tags/ | tail -1)
                 echo "XRAY_GEOIP_VERSION=${XRAY_GEOIP_VERSION}" >> ${GITHUB_ENV}
                 echo -e "\`\`\`\nXRAY_GEOIP_VERSION=${XRAY_GEOIP_VERSION}" >> ${GITHUB_STEP_SUMMARY}
             - name: Version comparison
