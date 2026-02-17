@@ -75,10 +75,9 @@ jobs:
               uses: actions/checkout@v4
               with:
                 submodules: 'false'
-                fetch-depth: 0
                 repository: 'Loyalsoldier/v2ray-rules-dat'
                 path: 'xray-geoip'
-            - name: Clone Debian maintaner scripts repository
+            - name: Clone Debian maintainer scripts repository
               uses: actions/checkout@v4
               with:
                 path: 'debian-scripts'
