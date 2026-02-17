@@ -86,10 +86,14 @@ jobs:
                 mkdir -p geoip/debian
                 cd xray-geoip
                 LAST_GEOIP_RELEASE_NAME=$(git for-each-ref --format '%(refname:short)' refs/tags/ | tail -1)
-                wget "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geosite.dat" > ../geoip/geosite.dat
-                wget "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geosite.dat.sha256sum" > ../geoip/geosite.dat.sha256sum
-                wget "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geoip.dat" > ../geoip/geoip.dat
-                wget "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geoip.dat.sha256sum" > ../geoip/geoip.dat.sha256sum
+                wget "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geosite.dat"
+                mv geosite.dat ../geoip/geosite.dat
+                wget "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geosite.dat.sha256sum"
+                mv geosite.dat.sha256sum ../geoip/geosite.dat.sha256sum
+                wget "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geoip.dat"
+                mv geoip.dat ../geoip/geoip.dat
+                wget "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geoip.dat.sha256sum"
+                mv geoip.dat.sha256sum ../geoip/geoip.dat.sha256sum
                 echo -e "\nRetrieved GeoIP files release name: \`${LAST_GEOIP_RELEASE_NAME}\`" >> ${GITHUB_STEP_SUMMARY}
                 for VERSION_TAG in $(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags)
                 do 
