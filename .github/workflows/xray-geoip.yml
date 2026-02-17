@@ -28,7 +28,7 @@ jobs:
                 gzip --decompress Sources.gz
                 XRAY_GEOIP_VERSION_REPO=$(grep -A 10 "^Package: xray-geoip" Sources | grep -Po '(?<=^Version: )[0-9]+')
                 echo "XRAY_GEOIP_VERSION_REPO=${XRAY_GEOIP_VERSION_REPO}" >> ${GITHUB_ENV}
-                echo -e "\`\`\`\XRAY_GEOIP_VERSION_REPO=${XRAY_GEOIP_VERSION_REPO}" >> ${GITHUB_STEP_SUMMARY}
+                echo -e "\`\`\`\nXRAY_GEOIP_VERSION_REPO=${XRAY_GEOIP_VERSION_REPO}" >> ${GITHUB_STEP_SUMMARY}
             - name: Clone GeoIP database repository
               uses: actions/checkout@v4
               with:
@@ -46,7 +46,7 @@ jobs:
                 cd xray-geoip
                 XRAY_GEOIP_VERSION=$(git describe --tags --abbrev=0)
                 echo "XRAY_GEOIP_VERSION=${XRAY_GEOIP_VERSION}" >> ${GITHUB_ENV}
-                echo -e "\`\`\`\XRAY_GEOIP_VERSION=${XRAY_GEOIP_VERSION}" >> ${GITHUB_STEP_SUMMARY}
+                echo -e "\`\`\`\nXRAY_GEOIP_VERSION=${XRAY_GEOIP_VERSION}" >> ${GITHUB_STEP_SUMMARY}
             - name: Version comparison
               id: version_compare
               run: |
