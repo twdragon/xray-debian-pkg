@@ -97,7 +97,7 @@ jobs:
                 wget "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/${LAST_GEOIP_RELEASE_NAME}/geoip.dat.sha256sum"
                 mv geoip.dat.sha256sum ../geoip/geoip.dat.sha256sum
                 echo -e "\nRetrieved GeoIP files release name: \`${LAST_GEOIP_RELEASE_NAME}\`" >> ${GITHUB_STEP_SUMMARY}
-                for VERSION_TAG in $(git for-each-ref --sort=-creatordate --format='%(refname:short)' refs/tags)
+                for VERSION_TAG in $(git for-each-ref --sort='-creatordate' --format='%(refname:short)' refs/tags/)
                 do 
                     echo -e "xray-geoip (${VERSION_TAG}) ${{ env.UBUNTU_CODENAME }}; urgency=low\n" >> ../geoip/debian/changelog
                     echo -e "  [ LoyalSoldier and Contrubutors ]\n  * Update ${VERSION_TAG}\n" >> ../geoip/debian/changelog
