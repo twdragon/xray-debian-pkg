@@ -51,7 +51,7 @@ jobs:
               run: |
                 echo -e "\nExtracting and analyzing annotated tags from Git repositories." >> ${GITHUB_STEP_SUMMARY}
                 cd xray-server
-                XRAY_SERVER_VERSION=$(../mkchangelog/get-latest-semver-tag HEAD)
+                XRAY_SERVER_VERSION=$(../mkchangelog/get-latest-tagged-semver HEAD)
                 rm -rf ../mkchangelog
                 echo "XRAY_SERVER_VERSION=${XRAY_SERVER_VERSION}" >> ${GITHUB_ENV}
                 echo -e "\`\`\`\nXRAY_SERVER_VERSION=${XRAY_SERVER_VERSION}" >> ${GITHUB_STEP_SUMMARY}
