@@ -8,7 +8,7 @@ defaults:
     run:
         shell: bash
 env:
-    UBUNTU_CODENAME: noble
+    UBUNTU_CODENAME: resolute
 jobs:
     version_analyzer:
         runs-on: ubuntu-latest
@@ -23,8 +23,8 @@ jobs:
                 echo -e "Workflow YML hash: \`${GITHUB_WORKFLOW_SHA}\`" >> ${GITHUB_STEP_SUMMARY}
                 echo -e "Trigger: \`${GITHUB_EVENT_NAME}\`" >> ${GITHUB_STEP_SUMMARY}
                 echo -e "\n## Version analyzer\n" >> ${GITHUB_STEP_SUMMARY}
-                echo 'Extracting version information from https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/noble/main/source/Sources.gz' >> ${GITHUB_STEP_SUMMARY}
-                curl https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/noble/main/source/Sources.gz --output Sources.gz
+                echo 'Extracting version information from https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/resolute/main/source/Sources.gz' >> ${GITHUB_STEP_SUMMARY}
+                curl https://ppa.launchpadcontent.net/twdragon/xray/ubuntu/dists/resolute/main/source/Sources.gz --output Sources.gz
                 gzip --decompress Sources.gz
                 GOXRAY_CLI_VERSION_REPO=$(grep -A 10 "^Package: goxray-cli" Sources | grep -Po '(?<=^Version: )[0-9]+\.[0-9]+\.[0-9]+')
                 echo "GOXRAY_CLI_VERSION_REPO=${GOXRAY_CLI_VERSION_REPO}" >> ${GITHUB_ENV}
